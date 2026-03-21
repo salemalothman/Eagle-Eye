@@ -1,0 +1,30 @@
+
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: eagle
+      POSTGRES_PASSWORD: eagle
+      POSTGRES_DB: eagleeye
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - eagle-eye
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - eagle-eye
+
+volumes:
+  timescaledb_data:
+
+networks:
+  eagle-eye:
+    driver: bridge

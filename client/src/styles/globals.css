@@ -1,0 +1,116 @@
+:root {
+  --color-bg: #0a0e17;
+  --color-bg-panel: rgba(10, 14, 23, 0.85);
+  --color-bg-panel-solid: #111827;
+  --color-border: rgba(0, 229, 255, 0.15);
+  --color-border-active: rgba(0, 229, 255, 0.4);
+  --color-primary: #00e5ff;
+  --color-primary-dim: rgba(0, 229, 255, 0.3);
+  --color-success: #00ff41;
+  --color-warning: #ffb300;
+  --color-danger: #ff3d3d;
+  --color-text: #e0e6ed;
+  --color-text-dim: #6b7a8d;
+  --color-text-bright: #ffffff;
+
+  --font-mono: 'JetBrains Mono', 'Source Code Pro', 'Fira Code', monospace;
+
+  --panel-blur: blur(12px);
+  --panel-radius: 4px;
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide Cesium default UI */
+.cesium-viewer-bottom,
+.cesium-viewer-toolbar,
+.cesium-viewer-animationContainer,
+.cesium-viewer-timelineContainer,
+.cesium-viewer-fullscreenContainer,
+.cesium-viewer-infoBoxContainer,
+.cesium-viewer-selectionIndicatorContainer,
+.cesium-viewer-geocoderContainer,
+.cesium-viewer-navigationHelpButtonContainer {
+  display: none !important;
+}
+
+.cesium-widget canvas {
+  outline: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-active);
+  border-radius: 2px;
+}
+
+/* Pulsing dot animation */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 4px 1px var(--color-success); }
+  50% { box-shadow: 0 0 8px 3px var(--color-success); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Glow effect for active elements */
+.glow-primary {
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3), inset 0 0 8px rgba(0, 229, 255, 0.1);
+}
+
+.glow-success {
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+}
+
+.glow-danger {
+  box-shadow: 0 0 8px rgba(255, 61, 61, 0.3);
+}
+
+/* CCTV REC indicator pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Hover glow for interactive elements */
+button:hover {
+  filter: brightness(1.15);
+}
+
+/* Range input custom track color */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
+}
