@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as Cesium from 'cesium';
 import { useCesiumViewer } from '../../hooks/useCesiumViewer';
 import { useStore } from '../../store';
-import type { FlightEntity, SatelliteEntity, EarthquakeEntity } from '../../types/entities';
+import type { FlightEntity, SatelliteEntity, EarthquakeEntity, VesselEntity } from '../../types/entities';
 
 export function DetailPanel() {
   const viewer = useCesiumViewer();
@@ -44,7 +44,7 @@ export function DetailPanel() {
         {entityType === 'satellite' && <SatelliteDetail sat={entity} />}
         {entityType === 'earthquake' && <EarthquakeDetail quake={entity} />}
         {entityType === 'cctv' && <CctvDetail cam={entity} />}
-        {entityType === 'vessel' && <GenericDetail data={entity} />}
+        {entityType === 'vessel' && <VesselDetail vessel={entity} />}
       </div>
 
       <div style={styles.footer}>
@@ -257,13 +257,26 @@ const cctvStyles: Record<string, React.CSSProperties> = {
   },
 };
 
-function GenericDetail({ data }: { data: any }) {
+const VESSEL_TYPE_NAMES: Record<number, string> = {
+  0: 'Unknown', 30: 'Fishing', 31: 'Towing', 32: 'Towing (large)',
+  33: 'Dredging', 34: 'Diving', 35: 'Military', 36: 'Sailing',
+  37: 'Pleasure', 40: 'HSC', 50: 'Pilot', 51: 'SAR', 52: 'Tug',
+  60: 'Passenger', 70: 'Cargo', 80: 'Tanker', 90: 'Other',
+};
+
+function VesselDetail({ vessel }: { vessel: VesselEntity }) {
+  const typeName = VESSEL_TYPE_NAMES[Math.floor(vessel.vesselType / 10) * 10] || `Type ${vessel.vesselType}`;
   return (
     <div style={styles.fieldList}>
-      {Object.entries(data).map(([key, value]) => {
-        if (key === 'trail' || typeof value === 'object') return null;
-        return <Field key={key} label={key.toUpperCase()} value={String(value)} />;
-      })}
+      <Field label="NAME" value={vessel.name || 'Unknown'} highlight />
+      <Field label="MMSI" value={String(vessel.mmsi)} />
+      <Field label="TYPE" value={typeName} />
+      <Field label="SPEED" value={`${vessel.speed.toFixed(1)} kn`} />
+      <Field label="COURSE" value={`${Math.round(vessel.course)}°`} />
+      <Field label="HEADING" value={`${Math.round(vessel.heading)}°`} />
+      <Field label="DESTINATION" value={vessel.destination || 'N/A'} />
+      <Field label="LAT" value={vessel.lat.toFixed(4)} />
+      <Field label="LON" value={vessel.lon.toFixed(4)} />
     </div>
   );
 }

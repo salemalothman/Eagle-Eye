@@ -7,6 +7,9 @@ import { FLIR_SHADER } from './flirShader';
 import { ANIME_SHADER } from './animeShader';
 import { PIXAR_SHADER } from './pixarShader';
 import { BLOOM_SHADER } from './bloomShader';
+import { NOIR_SHADER } from './noirShader';
+import { SNOW_SHADER } from './snowShader';
+import { AI_SHADER } from './aiShader';
 
 interface Props {
   viewer: Cesium.Viewer;
@@ -56,6 +59,9 @@ export function ShaderManager({ viewer }: Props) {
       case 'anime': fragmentShader = ANIME_SHADER; break;
       case 'pixar': fragmentShader = PIXAR_SHADER; break;
       case 'bloom': fragmentShader = BLOOM_SHADER; break;
+      case 'noir':  fragmentShader = NOIR_SHADER;  break;
+      case 'snow':  fragmentShader = SNOW_SHADER;  break;
+      case 'ai':    fragmentShader = AI_SHADER;    break;
       default: return;
     }
 

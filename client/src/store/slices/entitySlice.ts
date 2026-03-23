@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import type { FlightEntity, SatelliteEntity, VesselEntity, EarthquakeEntity } from '../../types/entities';
+import type { LayerId } from '../../types/layers';
 
 export interface EntitySlice {
   commercialFlights: Map<string, FlightEntity>;
@@ -7,11 +8,13 @@ export interface EntitySlice {
   satellites: Map<number, SatelliteEntity>;
   vessels: Map<string, VesselEntity>;
   earthquakes: Map<string, EarthquakeEntity>;
+  trailsEnabled: Partial<Record<LayerId, boolean>>;
   setCommercialFlights: (flights: FlightEntity[]) => void;
   setMilitaryFlights: (flights: FlightEntity[]) => void;
   setSatellites: (sats: SatelliteEntity[]) => void;
   setVessels: (vessels: VesselEntity[]) => void;
   setEarthquakes: (quakes: EarthquakeEntity[]) => void;
+  toggleTrails: (id: LayerId) => void;
 }
 
 export const createEntitySlice: StateCreator<EntitySlice> = (set) => ({
@@ -20,6 +23,7 @@ export const createEntitySlice: StateCreator<EntitySlice> = (set) => ({
   satellites: new Map(),
   vessels: new Map(),
   earthquakes: new Map(),
+  trailsEnabled: {},
   setCommercialFlights: (flights) => {
     const map = new Map<string, FlightEntity>();
     flights.forEach((f) => map.set(f.id, f));
@@ -45,4 +49,8 @@ export const createEntitySlice: StateCreator<EntitySlice> = (set) => ({
     quakes.forEach((q) => map.set(q.id, q));
     set({ earthquakes: map });
   },
+  toggleTrails: (id) =>
+    set((s) => ({
+      trailsEnabled: { ...s.trailsEnabled, [id]: !s.trailsEnabled[id] },
+    })),
 });

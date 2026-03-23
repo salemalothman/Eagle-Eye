@@ -11,6 +11,7 @@ class WsHub {
   private wss: WebSocketServer | null = null;
   private clients = new Set<WsClient>();
   private channelMap = new Map<string, Set<WsClient>>();
+  private latestData = new Map<string, string>(); // cached last broadcast per channel
 
   init(server: Server) {
     this.wss = new WebSocketServer({ server, path: '/ws' });
@@ -28,6 +29,11 @@ class WsHub {
               client.channels.add(ch);
               if (!this.channelMap.has(ch)) this.channelMap.set(ch, new Set());
               this.channelMap.get(ch)!.add(client);
+              // Send cached data for this channel immediately on subscribe
+              const cached = this.latestData.get(ch);
+              if (cached && ws.readyState === WebSocket.OPEN) {
+                ws.send(cached);
+              }
             }
           }
           if (msg.type === 'unsubscribe' && Array.isArray(msg.channels)) {
@@ -73,10 +79,13 @@ class WsHub {
   }
 
   broadcast(channel: string, data: any) {
+    const payload = JSON.stringify({ channel, timestamp: Date.now(), data });
+    // Cache latest payload so new subscribers get it immediately
+    this.latestData.set(channel, payload);
+
     const subscribers = this.channelMap.get(channel);
     if (!subscribers || subscribers.size === 0) return;
 
-    const payload = JSON.stringify({ channel, timestamp: Date.now(), data });
     for (const client of subscribers) {
       if (client.ws.readyState === WebSocket.OPEN) {
         client.ws.send(payload);

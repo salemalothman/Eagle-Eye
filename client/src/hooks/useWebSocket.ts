@@ -19,24 +19,29 @@ export function useWebSocket() {
   const setEarthquakes = useStore((s) => s.setEarthquakes);
   const setVessels = useStore((s) => s.setVessels);
   const setEntityCount = useStore((s) => s.setEntityCount);
+  const setLayerLastUpdate = useStore((s) => s.setLayerLastUpdate);
 
   const handleMessage = useCallback(
     (event: MessageEvent) => {
       try {
         const msg: WsMessage = JSON.parse(event.data);
+        const now = Date.now();
 
         switch (msg.channel) {
           case 'flights:commercial':
             setCommercialFlights(msg.data);
             setEntityCount('commercialFlights', msg.data.length);
+            setLayerLastUpdate('commercialFlights', now);
             break;
           case 'flights:military':
             setMilitaryFlights(msg.data);
             setEntityCount('militaryFlights', msg.data.length);
+            setLayerLastUpdate('militaryFlights', now);
             break;
           case 'satellites:tle':
             setSatellites(msg.data);
             setEntityCount('satellites', msg.data.length);
+            setLayerLastUpdate('satellites', now);
             break;
           case 'vessels':
           case 'maritime': {
@@ -44,21 +49,33 @@ export function useWebSocket() {
             if (vessels.length > 0) {
               setVessels(vessels);
               setEntityCount('maritime', vessels.length);
+              setLayerLastUpdate('maritime', now);
             }
             break;
           }
           case 'earthquakes':
             setEarthquakes(msg.data);
             setEntityCount('earthquakes', msg.data.length);
+            setLayerLastUpdate('earthquakes', now);
             break;
-          // gpsjamming and outages are broadcast-only; layers read seed data
-          // and will be upgraded once store slices are added
+          case 'gpsjamming':
+            if (Array.isArray(msg.data)) {
+              setEntityCount('gpsJamming', msg.data.length);
+              setLayerLastUpdate('gpsJamming', now);
+            }
+            break;
+          case 'outages':
+            if (Array.isArray(msg.data)) {
+              setEntityCount('internetOutages', msg.data.length);
+              setLayerLastUpdate('internetOutages', now);
+            }
+            break;
         }
       } catch {
         // Connected message or malformed
       }
     },
-    [setCommercialFlights, setMilitaryFlights, setSatellites, setEarthquakes, setVessels, setEntityCount]
+    [setCommercialFlights, setMilitaryFlights, setSatellites, setEarthquakes, setVessels, setEntityCount, setLayerLastUpdate]
   );
 
   const connect = useCallback(() => {

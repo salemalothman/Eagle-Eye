@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useStore } from '../../store';
 import type { LayerId } from '../../types/layers';
 
@@ -6,17 +7,30 @@ const LAYER_ORDER: LayerId[] = [
   'militaryFlights',
   'earthquakes',
   'satellites',
-  'maritime',
-  'gpsJamming',
-  'internetOutages',
-  'airspaceClosures',
+  'streetTraffic',
+  'weatherRadar',
   'cctvMesh',
+  'bikeshare',
 ];
+
+function formatRelativeTime(ts: number | null): string {
+  if (ts == null) return 'never';
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  return `${Math.floor(diff / 3600)}h ago`;
+}
+
+function formatCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return String(n);
+}
 
 export function LeftSidebar() {
   const layers = useStore((s) => s.layers);
   const toggleLayer = useStore((s) => s.toggleLayer);
   const leftSidebarOpen = useStore((s) => s.leftSidebarOpen);
+  const [collapsed, setCollapsed] = useState(false);
 
   if (!leftSidebarOpen) return null;
 
@@ -24,57 +38,57 @@ export function LeftSidebar() {
     <div style={styles.container}>
       <div style={styles.header}>
         <span style={styles.headerText}>DATA LAYERS</span>
+        <button
+          style={styles.collapseBtn}
+          onClick={() => setCollapsed((c) => !c)}
+        >
+          {collapsed ? '+' : '\u2212'}
+        </button>
       </div>
 
-      <div style={styles.layerList}>
-        {LAYER_ORDER.map((id) => {
-          const layer = layers[id];
-          return (
-            <div
-              key={id}
-              style={styles.layerRow}
-              onClick={() => toggleLayer(id)}
-            >
-              <div style={styles.toggleWrapper}>
-                <div
-                  style={{
-                    ...styles.toggle,
-                    backgroundColor: layer.visible
-                      ? layer.color
-                      : 'transparent',
-                    borderColor: layer.visible
-                      ? layer.color
-                      : '#4a5568',
-                  }}
-                >
-                  {layer.visible && <span style={styles.checkmark}>✓</span>}
+      {!collapsed && (
+        <div style={styles.layerList}>
+          {LAYER_ORDER.map((id) => {
+            const layer = layers[id];
+            if (!layer) return null;
+            const isOn = layer.visible;
+
+            return (
+              <div key={id} style={styles.layerRow}>
+                {/* Icon */}
+                <span style={styles.icon}>{layer.icon}</span>
+
+                {/* Name + source */}
+                <div style={styles.info}>
+                  <span style={styles.layerName}>{layer.label}</span>
+                  <span style={styles.layerSource}>
+                    {layer.source} &middot; {formatRelativeTime(layer.lastUpdate)}
+                  </span>
                 </div>
-              </div>
-              <span
-                style={{
-                  ...styles.layerLabel,
-                  color: layer.visible ? '#e0e6ed' : '#6b7a8d',
-                }}
-              >
-                {layer.icon} {layer.label}
-              </span>
-              {layer.entityCount > 0 && (
-                <span
+
+                {/* Entity count */}
+                {layer.entityCount > 0 && (
+                  <span style={styles.entityCount}>
+                    {formatCount(layer.entityCount)}
+                  </span>
+                )}
+
+                {/* ON/OFF pill toggle */}
+                <button
                   style={{
-                    ...styles.badge,
-                    color: layer.color,
-                    borderColor: layer.color + '40',
+                    ...styles.pill,
+                    borderColor: isOn ? '#00e5ff' : '#4a5568',
+                    color: isOn ? '#00e5ff' : '#6b7a8d',
                   }}
+                  onClick={() => toggleLayer(id)}
                 >
-                  {layer.entityCount > 1000
-                    ? `${(layer.entityCount / 1000).toFixed(1)}k`
-                    : layer.entityCount}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                  {isOn ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -84,72 +98,109 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     top: 120,
     left: 12,
-    width: 200,
-    background: 'var(--color-bg-panel)',
-    backdropFilter: 'var(--panel-blur)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--panel-radius)',
+    width: 280,
+    background: 'rgba(10, 14, 23, 0.85)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(0, 229, 255, 0.12)',
+    borderRadius: 6,
     padding: '12px',
     pointerEvents: 'auto',
     zIndex: 100,
-    transition: 'transform var(--transition-normal)',
+    fontFamily: "'JetBrains Mono', monospace",
   },
   header: {
-    marginBottom: '10px',
-    paddingBottom: '6px',
-    borderBottom: '1px solid var(--color-border)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottom: '1px solid rgba(0, 229, 255, 0.12)',
   },
   headerText: {
-    fontSize: '9px',
+    fontSize: 9,
     fontWeight: 600,
     color: '#6b7a8d',
-    letterSpacing: '2px',
+    letterSpacing: 2,
     textTransform: 'uppercase' as const,
+  },
+  collapseBtn: {
+    background: 'none',
+    border: '1px solid rgba(0, 229, 255, 0.25)',
+    borderRadius: 3,
+    color: '#00e5ff',
+    fontSize: 12,
+    width: 20,
+    height: 20,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    padding: 0,
+    lineHeight: 1,
+    fontFamily: "'JetBrains Mono', monospace",
   },
   layerList: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
+    flexDirection: 'column' as const,
+    gap: 2,
   },
   layerRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '5px 4px',
-    borderRadius: '2px',
-    cursor: 'pointer',
-    transition: 'background var(--transition-fast)',
+    gap: 8,
+    padding: '6px 4px',
+    borderRadius: 3,
+    cursor: 'default',
   },
-  toggleWrapper: {},
-  toggle: {
-    width: 14,
-    height: 14,
-    borderRadius: '2px',
-    border: '1.5px solid',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all var(--transition-fast)',
+  icon: {
+    fontSize: 14,
     flexShrink: 0,
+    width: 20,
+    textAlign: 'center' as const,
   },
-  checkmark: {
-    fontSize: '9px',
-    color: '#0a0e17',
-    fontWeight: 700,
-  },
-  layerLabel: {
-    fontSize: '11px',
-    fontWeight: 400,
+  info: {
     flex: 1,
-    transition: 'color var(--transition-fast)',
-    whiteSpace: 'nowrap' as const,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 1,
+    minWidth: 0,
+    overflow: 'hidden',
   },
-  badge: {
-    fontSize: '9px',
-    fontWeight: 500,
-    padding: '1px 5px',
+  layerName: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#e0e6ed',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  layerSource: {
+    fontSize: 8,
+    fontWeight: 400,
+    color: '#6b7a8d',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  entityCount: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: '#ffb300',
+    flexShrink: 0,
+    letterSpacing: 0.5,
+  },
+  pill: {
+    background: 'transparent',
     border: '1px solid',
-    borderRadius: '8px',
-    letterSpacing: '0.3px',
+    borderRadius: 10,
+    fontSize: 8,
+    fontWeight: 700,
+    letterSpacing: 1,
+    padding: '2px 8px',
+    cursor: 'pointer',
+    flexShrink: 0,
+    fontFamily: "'JetBrains Mono', monospace",
+    textTransform: 'uppercase' as const,
   },
 };

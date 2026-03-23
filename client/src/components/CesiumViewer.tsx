@@ -13,6 +13,9 @@ import { AirspaceClosureLayer } from './layers/AirspaceClosureLayer';
 import { MaritimeLayer } from './layers/MaritimeLayer';
 import { EventCardLayer } from './layers/EventCardLayer';
 import { CctvLayer } from './layers/CctvLayer';
+import { StreetTrafficLayer } from './layers/StreetTrafficLayer';
+import { BikeshareLayer } from './layers/BikeshareLayer';
+import { WeatherRadarLayer } from './layers/WeatherRadarLayer';
 
 interface Props {
   children?: React.ReactNode;
@@ -26,6 +29,9 @@ export function CesiumGlobe({ children }: Props) {
 
   useEffect(() => {
     if (!containerRef.current || viewerRef.current) return;
+
+    // Ensure CESIUM_BASE_URL is set so buildModuleUrl resolves correctly
+    (window as any).CESIUM_BASE_URL = '/cesium/';
 
     // Set Cesium Ion token if available
     const ionToken = (window as any).__CESIUM_ION_TOKEN__;
@@ -158,6 +164,9 @@ export function CesiumGlobe({ children }: Props) {
           <LayerErrorBoundary><MaritimeLayer viewer={viewer} /></LayerErrorBoundary>
           <LayerErrorBoundary><EventCardLayer viewer={viewer} /></LayerErrorBoundary>
           <LayerErrorBoundary><CctvLayer viewer={viewer} /></LayerErrorBoundary>
+          <LayerErrorBoundary><StreetTrafficLayer viewer={viewer} /></LayerErrorBoundary>
+          <LayerErrorBoundary><BikeshareLayer viewer={viewer} /></LayerErrorBoundary>
+          <LayerErrorBoundary><WeatherRadarLayer viewer={viewer} /></LayerErrorBoundary>
           {children}
         </>
       )}

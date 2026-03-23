@@ -2,6 +2,7 @@ import axios from 'axios';
 import { config } from '../config.js';
 import { wsHub } from '../websocket/wsHub.js';
 import { getRedis } from '../services/redis.js';
+import { updateOpenSkyCache } from './adsbexchange.worker.js';
 
 interface FlightData {
   id: string;
@@ -122,6 +123,9 @@ async function poll() {
       } catch {
         // Redis not available, continue
       }
+
+      // Feed military extraction with fresh OpenSky data
+      updateOpenSkyCache(flights);
 
       wsHub.broadcast('flights:commercial', flights);
       console.log(`[OpenSky] Broadcast ${flights.length} flights`);

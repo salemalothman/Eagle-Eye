@@ -10,6 +10,10 @@ import { PlaybackTimeline } from './components/ui/PlaybackTimeline';
 import { Minimap } from './components/ui/Minimap';
 import { PlaybackLayerPills } from './components/ui/PlaybackLayerPills';
 import { CameraInfo } from './components/ui/CameraInfo';
+import { CctvPanel } from './components/ui/CctvPanel';
+import { EntityTooltip } from './components/ui/EntityTooltip';
+import { StylePresetsPanel } from './components/ui/StylePresetsPanel';
+import { LocationsPanel } from './components/ui/LocationsPanel';
 import { useCesiumViewer } from './hooks/useCesiumViewer';
 import { useStore } from './store';
 import { LOCATION_PRESETS, flyToPreset, flyToGlobeView } from './utils/cesiumHelpers';
@@ -32,6 +36,10 @@ export default function App() {
       <PlaybackLayerPills />
       <CameraInfo />
       <Minimap />
+      <CctvPanel />
+      <EntityTooltip />
+      <StylePresetsPanel />
+      <LocationsPanel />
       <HudOverlay />
     </div>
   );
